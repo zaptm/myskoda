@@ -9,6 +9,8 @@ from mashumaro import field_options
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 from mashumaro.mixins.yaml import DataClassYAMLMixin
 
+from myskoda.utils import enum_contains
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -135,10 +137,10 @@ class Capability(DataClassORJSONMixin, DataClassYAMLMixin):
 
 def drop_unknown_capabilities(value: list[dict]) -> list[Capability]:
     """Drop any unknown capabilities and log a message."""
-    unknown_capabilities = [c for c in value if c["id"] not in CapabilityId]
+    unknown_capabilities = [c for c in value if not enum_contains(CapabilityId, c["id"])]
     if unknown_capabilities:
         _LOGGER.info("Dropping unknown capabilities: %s", unknown_capabilities)
-    return [Capability.from_dict(c) for c in value if c["id"] in CapabilityId]
+    return [Capability.from_dict(c) for c in value if enum_contains(CapabilityId, c["id"])]
 
 
 @dataclass
