@@ -191,7 +191,7 @@ class RestApi:
 
     async def get_auxiliary_heating(
         self, vin: str, anonymize: bool = False
-    ) -> GetEndpointResult[AuxiliaryHeating]:
+    ) -> GetEndpointResult:
         """Retrieve the current auxiliary heating status for the specified vehicle."""
         url = f"/v2/air-conditioning/{vin}/auxiliary-heating"
         raw = self.process_json(
@@ -232,7 +232,11 @@ class RestApi:
         return GetEndpointResult(url=url, raw=raw, result=result)
 
     async def get_trip_statistics(
+<<<<<<< HEAD
         self, vin: str, offset_type: str = "week", offset: int = 0, anonymize: bool = False
+=======
+        self, vin: str, anonymize: bool = False
+>>>>>>> b3eb028 (Removed generic types from `myskoda.rest_api` & `myskoda.myskoda`; changed minimum Python version to 3.11)
     ) -> GetEndpointResult:
         """Retrieve statistics about past trips."""
         url = f"/v1/trip-statistics/{vin}?offsetType={offset_type}&offset={offset}&timezone=Europe%2FBerlin"
@@ -293,7 +297,7 @@ class RestApi:
         result = self._deserialize(raw, Garage.from_json)
         return GetEndpointResult(url=url, raw=raw, result=result)
 
-    async def _headers(self) -> dict[str, str]:
+    async def _headers(self) -> dict:
         return {"authorization": f"Bearer {await self.authorization.get_access_token()}"}
 
     async def stop_air_conditioning(self, vin: str) -> None:
