@@ -340,7 +340,7 @@ class MySkoda:
 
     async def get_endpoint(
         self, vin: str, endpoint: Endpoint, anonymize: bool = False
-    ) -> GetEndpointResult[Any]:
+    ) -> GetEndpointResult:
         """Invoke a get endpoint by endpoint enum."""
         result = GetEndpointResult(url="", result=None, raw="")
 

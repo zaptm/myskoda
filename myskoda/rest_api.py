@@ -43,10 +43,10 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class GetEndpointResult[T]:
+class GetEndpointResult:
     url: str
     raw: str
-    result: T
+    result: any
 
 
 class RestApi:
@@ -91,7 +91,7 @@ class RestApi:
             _LOGGER.exception("Invalid status for %s request to %s: %d", method, url, err.status)
             raise
 
-    async def _make_get_request[T](self, url: str) -> str:
+    async def _make_get_request(self, url: str) -> str:
         return await self._make_request(url=url, method="GET")
 
     async def _make_post_request(self, url: str, json: dict | None = None) -> str:
@@ -100,7 +100,7 @@ class RestApi:
     async def _make_put_request(self, url: str, json: dict | None = None) -> str:
         return await self._make_request(url=url, method="PUT", json=json)
 
-    async def get_info(self, vin: str, anonymize: bool = False) -> GetEndpointResult[Info]:
+    async def get_info(self, vin: str, anonymize: bool = False) -> GetEndpointResult:
         """Retrieve information related to basic information for the specified vehicle."""
         url = f"/v2/garage/vehicles/{vin}?connectivityGenerations=MOD1&connectivityGenerations=MOD2&connectivityGenerations=MOD3&connectivityGenerations=MOD4"  # noqa: E501
         raw = self.process_json(
@@ -112,7 +112,7 @@ class RestApi:
         url = anonymize_url(url) if anonymize else url
         return GetEndpointResult(url=url, raw=raw, result=result)
 
-    async def get_charging(self, vin: str, anonymize: bool = False) -> GetEndpointResult[Charging]:
+    async def get_charging(self, vin: str, anonymize: bool = False) -> GetEndpointResult:
         """Retrieve information related to charging for the specified vehicle."""
         url = f"/v1/charging/{vin}"
         raw = self.process_json(
@@ -124,7 +124,7 @@ class RestApi:
         url = anonymize_url(url) if anonymize else url
         return GetEndpointResult(url=url, raw=raw, result=result)
 
-    async def get_status(self, vin: str, anonymize: bool = False) -> GetEndpointResult[Status]:
+    async def get_status(self, vin: str, anonymize: bool = False) -> GetEndpointResult:
         """Retrieve the current status for the specified vehicle."""
         url = f"/v2/vehicle-status/{vin}"
         raw = self.process_json(
@@ -138,7 +138,7 @@ class RestApi:
 
     async def get_air_conditioning(
         self, vin: str, anonymize: bool = False
-    ) -> GetEndpointResult[AirConditioning]:
+    ) -> GetEndpointResult:
         """Retrieve the current air conditioning status for the specified vehicle."""
         url = f"/v2/air-conditioning/{vin}"
         raw = self.process_json(
@@ -152,7 +152,7 @@ class RestApi:
 
     async def get_positions(
         self, vin: str, anonymize: bool = False
-    ) -> GetEndpointResult[Positions]:
+    ) -> GetEndpointResult:
         """Retrieve the current position for the specified vehicle."""
         url = f"/v1/maps/positions?vin={vin}"
         raw = self.process_json(
@@ -166,7 +166,7 @@ class RestApi:
 
     async def get_driving_range(
         self, vin: str, anonymize: bool = False
-    ) -> GetEndpointResult[DrivingRange]:
+    ) -> GetEndpointResult:
         """Retrieve estimated driving range for combustion vehicles."""
         url = f"/v2/vehicle-status/{vin}/driving-range"
         raw = self.process_json(
@@ -180,7 +180,7 @@ class RestApi:
 
     async def get_trip_statistics(
         self, vin: str, anonymize: bool = False
-    ) -> GetEndpointResult[TripStatistics]:
+    ) -> GetEndpointResult:
         """Retrieve statistics about past trips."""
         url = f"/v1/trip-statistics/{vin}?offsetType=week&offset=0&timezone=Europe%2FBerlin"
         raw = self.process_json(
@@ -194,7 +194,7 @@ class RestApi:
 
     async def get_maintenance(
         self, vin: str, anonymize: bool = False
-    ) -> GetEndpointResult[Maintenance]:
+    ) -> GetEndpointResult:
         """Retrieve maintenance report."""
         url = f"/v3/vehicle-maintenance/vehicles/{vin}"
         raw = self.process_json(
@@ -206,7 +206,7 @@ class RestApi:
         url = anonymize_url(url) if anonymize else url
         return GetEndpointResult(url=url, raw=raw, result=result)
 
-    async def get_health(self, vin: str, anonymize: bool = False) -> GetEndpointResult[Health]:
+    async def get_health(self, vin: str, anonymize: bool = False) -> GetEndpointResult:
         """Retrieve health information for the specified vehicle."""
         url = f"/v1/vehicle-health-report/warning-lights/{vin}"
         raw = self.process_json(
@@ -218,7 +218,7 @@ class RestApi:
         url = anonymize_url(url) if anonymize else url
         return GetEndpointResult(url=url, raw=raw, result=result)
 
-    async def get_user(self, anonymize: bool = False) -> GetEndpointResult[User]:
+    async def get_user(self, anonymize: bool = False) -> GetEndpointResult:
         """Retrieve user information about logged in user."""
         url = "/v1/users"
         raw = self.process_json(
@@ -229,7 +229,7 @@ class RestApi:
         result = self._deserialize(raw, User.from_json)
         return GetEndpointResult(url=url, raw=raw, result=result)
 
-    async def get_garage(self, anonymize: bool = False) -> GetEndpointResult[Garage]:
+    async def get_garage(self, anonymize: bool = False) -> GetEndpointResult:
         """Fetch the garage (list of vehicles with limited info)."""
         url = "/v2/garage?connectivityGenerations=MOD1&connectivityGenerations=MOD2&connectivityGenerations=MOD3&connectivityGenerations=MOD4"  # noqa: E501
         raw = self.process_json(
@@ -387,7 +387,7 @@ class RestApi:
             url=f"/v1/vehicle-access/{vin}/honk-and-flash", json=json_data
         )
 
-    def _deserialize[T](self, text: str, deserialize: Callable[[str], T]) -> T:
+    def _deserialize(self, text: str, deserialize: Callable[[str], any]) -> any:
         try:
             data = deserialize(text)
         except Exception:
