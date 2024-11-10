@@ -179,10 +179,10 @@ class RestApi:
         return GetEndpointResult(url=url, raw=raw, result=result)
 
     async def get_trip_statistics(
-        self, vin: str, anonymize: bool = False
+        self, vin: str, offset_type: str = "week", offset: int = 0, anonymize: bool = False
     ) -> GetEndpointResult:
         """Retrieve statistics about past trips."""
-        url = f"/v1/trip-statistics/{vin}?offsetType=week&offset=0&timezone=Europe%2FBerlin"
+        url = f"/v1/trip-statistics/{vin}?offsetType={offset_type}&offset={offset}&timezone=Europe%2FBerlin"
         raw = self.process_json(
             data=await self._make_get_request(url),
             anonymize=anonymize,

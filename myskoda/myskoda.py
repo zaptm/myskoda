@@ -257,9 +257,9 @@ class MySkoda:
         """Retrieve estimated driving range for combustion vehicles."""
         return (await self.rest_api.get_driving_range(vin, anonymize=anonymize)).result
 
-    async def get_trip_statistics(self, vin: str, anonymize: bool = False) -> TripStatistics:
+    async def get_trip_statistics(self, vin: str, offset_type: str = "week", offset: int = 0, anonymize: bool = False) -> TripStatistics:
         """Retrieve statistics about past trips."""
-        return (await self.rest_api.get_trip_statistics(vin, anonymize=anonymize)).result
+        return (await self.rest_api.get_trip_statistics(vin, offset_type=offset_type, offset=offset, anonymize=anonymize)).result
 
     async def get_maintenance(self, vin: str, anonymize: bool = False) -> Maintenance:
         """Retrieve maintenance report."""
