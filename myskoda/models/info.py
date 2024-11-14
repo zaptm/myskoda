@@ -180,6 +180,7 @@ class VehicleState(StrEnum):
 
     ACTIVATED = "ACTIVATED"
     GUEST_USER = "GUEST_USER"
+    NOT_ACTIVATED = "NOT_ACTIVATED"
 
 
 @dataclass
