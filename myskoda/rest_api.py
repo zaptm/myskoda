@@ -41,6 +41,7 @@ from .models.user import User
 
 _LOGGER = logging.getLogger(__name__)
 
+API_URL_SKODA = f"{BASE_URL_SKODA}/api"
 
 @dataclass
 class GetEndpointResult:
@@ -72,18 +73,25 @@ class RestApi:
         anonymized = anonymization_fn(parsed)
         return json.dumps(anonymized)
 
-    async def _make_request(self, url: str, method: str, json: dict | None = None) -> str:
+    async def _make_request(self, url: str, method: str, json: dict | None = None, as_text: bool = True) -> str | bytes:
         try:
             async with asyncio.timeout(REQUEST_TIMEOUT_IN_SECONDS):
                 async with self.session.request(
                     method=method,
-                    url=f"{BASE_URL_SKODA}/api{url}",
+                    url=f"{API_URL_SKODA}{url}",
                     headers=await self._headers(),
                     json=json,
                 ) as response:
-                    await response.text()  # Ensure response is fully read
+                    if as_text:
+                        await response.text()  # Ensure response is fully read
+                    else:
+                        await response.read()  # Ensure response is fully read
                     response.raise_for_status()
-                    return await response.text()
+
+                    if as_text:
+                        return await response.text()
+                    else:
+                        return await response.read()
         except TimeoutError:
             _LOGGER.exception("Timeout while sending %s request to %s", method, url)
             raise
@@ -91,14 +99,14 @@ class RestApi:
             _LOGGER.exception("Invalid status for %s request to %s: %d", method, url, err.status)
             raise
 
-    async def _make_get_request(self, url: str) -> str:
-        return await self._make_request(url=url, method="GET")
+    async def _make_get_request(self, url: str, as_text: bool = True) -> str | bytes:
+        return await self._make_request(url=url, method="GET", as_text=as_text)
 
-    async def _make_post_request(self, url: str, json: dict | None = None) -> str:
-        return await self._make_request(url=url, method="POST", json=json)
+    async def _make_post_request(self, url: str, json: dict | None = None, as_text: bool = True) -> str | bytes:
+        return await self._make_request(url=url, method="POST", json=json, as_text=as_text)
 
-    async def _make_put_request(self, url: str, json: dict | None = None) -> str:
-        return await self._make_request(url=url, method="PUT", json=json)
+    async def _make_put_request(self, url: str, json: dict | None = None, as_text: bool = True) -> str | bytes:
+        return await self._make_request(url=url, method="PUT", json=json, as_text=as_text)
 
     async def get_info(self, vin: str, anonymize: bool = False) -> GetEndpointResult:
         """Retrieve information related to basic information for the specified vehicle."""
@@ -135,6 +143,15 @@ class RestApi:
         result = self._deserialize(raw, Status.from_json)
         url = anonymize_url(url) if anonymize else url
         return GetEndpointResult(url=url, raw=raw, result=result)
+
+    async def get_status_render(self, status_render_url):
+        if not status_render_url.startswith(API_URL_SKODA):
+            raise ValueError(f"Unsupported render url: {status_render_url}")
+
+        url = status_render_url[len(API_URL_SKODA):]
+        raw = await self._make_get_request(url, as_text = False)
+
+        return GetEndpointResult(url = url, raw = raw, result = raw)
 
     async def get_air_conditioning(
         self, vin: str, anonymize: bool = False

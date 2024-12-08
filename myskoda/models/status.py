@@ -37,6 +37,15 @@ class DoorWindowState(StrEnum):
     DOOR_OPEN = "Door opened"
     WINDOW_OPEN = "Window opened"
 
+class RenderModes(StrEnum):
+    LIGHT_MODE = "light_mode"
+    DARK_MODE = "dark_mode"
+
+class RenderSizes(StrEnum):
+    ONE_X = "one_x"
+    ONE_AND_HALF_X = "one_and_half_x"
+    TWO_X = "two_x"
+    THREE_X = "three_x"
 
 @dataclass
 class Detail(DataClassORJSONMixin):

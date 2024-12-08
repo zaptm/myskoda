@@ -34,7 +34,7 @@ from .models.info import CapabilityId, Info
 from .models.maintenance import Maintenance
 from .models.operation_request import OperationName
 from .models.position import Positions
-from .models.status import Status
+from .models.status import Status, RenderModes, RenderSizes
 from .models.trip_statistics import TripStatistics
 from .models.user import User
 from .mqtt import MySkodaMqttClient
@@ -244,6 +244,11 @@ class MySkoda:
     async def get_status(self, vin: str, anonymize: bool = False) -> Status:
         """Retrieve the current status for the specified vehicle."""
         return (await self.rest_api.get_status(vin, anonymize=anonymize)).result
+
+    async def get_status_render(self, status: Status, render_mode: RenderModes, render_size: RenderSizes):
+        status_render_url = getattr(getattr(status.renders, render_mode.value), render_size.value)
+
+        return (await self.rest_api.get_status_render(status_render_url)).result
 
     async def get_air_conditioning(self, vin: str, anonymize: bool = False) -> AirConditioning:
         """Retrieve the current air conditioning status for the specified vehicle."""
